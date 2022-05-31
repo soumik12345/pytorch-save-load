@@ -3,6 +3,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.layout import Layout
 
+from utils import shorten_url
+
 
 class Header:
     """Display header with clock."""
@@ -43,7 +45,10 @@ def interface(
     train_message: str = "Epoch Progression",
     url="Let W&B initialize a run!",
 ):
+    short_url = shorten_url("http://www.wandb.ai/wandb/common-ml-errors/reports/How-to-Save-and-Load-Models-in-PyTorch--VmlldzozMjg0MTE")
+    report_url = f"For more details Check out our report @ {short_url} :bee:"
     footer_table = get_footer_table(url)
+    report_footer_table = get_footer_table(report_url)
 
     layout = Layout(name="root")
 
@@ -51,10 +56,12 @@ def interface(
         Layout(name="header", size=3),
         Layout(name="epoch-level", size=7),
         Layout(name="footer", size=3),
+        Layout(name="report-footer", size=3),
     )
 
     layout["header"].update(Header())
     layout["epoch-level"].update(get_epoch_table(epoch_progress, train_message))
     layout["footer"].update(footer_table)
+    layout["report-footer"].update(report_footer_table)
 
     return layout
