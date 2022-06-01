@@ -2,26 +2,58 @@ import os
 import wandb
 from time import sleep
 
-import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from rich.live import Live
-from rich.table import Column
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    BarColumn,
-    TimeElapsedColumn,
-)
+from rich import print as rich_print
 
-from styles import interface
+from utils import seed_everything
 from data import create_dataloaders
-from train import train_and_validate
-from utils import seed_everything, shorten_url, cleanup
+from choices import choice_1, choice_2, choice_3
 
 
 if __name__ == "__main__":
+
+    rich_print(
+        "[yellow] ___       __   _______   ___  ________  ___  ___  _________  ________           ________             ________  ___  ________  ________  _______   ________      "
+    )
+    rich_print(
+        "[yellow]|\  \     |\  \|\  ___ \ |\  \|\   ____\|\  \|\  \|\___   ___\\   ____\         |\   __  \           |\   __  \|\  \|\   __  \|\   ____\|\  ___ \ |\   ____\     "
+    )
+    rich_print(
+        "[yellow]\ \  \    \ \  \ \   __/|\ \  \ \  \___|\ \  \\\  \|___ \  \_\ \  \___|_        \ \  \|\  \  /\      \ \  \|\ /\ \  \ \  \|\  \ \  \___|\ \   __/|\ \  \___|_    "
+    )
+    rich_print(
+        "[yellow] \ \  \  __\ \  \ \  \_|/_\ \  \ \  \  __\ \   __  \   \ \  \ \ \_____  \        \ \__     \/  \      \ \   __  \ \  \ \   __  \ \_____  \ \  \_|/_\ \_____  \   "
+    )
+    rich_print(
+        "[yellow]  \ \  \|\__\_\  \ \  \_|\ \ \  \ \  \|\  \ \  \ \  \   \ \  \ \|____|\  \        \|_/  __     /|      \ \  \|\  \ \  \ \  \ \  \|____|\  \ \  \_|\ \|____|\  \  "
+    )
+    rich_print(
+        "[yellow]   \ \____________\ \_______\ \__\ \_______\ \__\ \__\   \ \__\  ____\_\  \         /  /_|\   / /       \ \_______\ \__\ \__\ \__\____\_\  \ \_______\____\_\  \ "
+    )
+    rich_print(
+        "[yellow]    \|____________|\|_______|\|__|\|_______|\|__|\|__|    \|__| |\_________\       /_______   \/         \|_______|\|__|\|__|\|__|\_________\|_______|\_________\ "
+    )
+    rich_print(
+        "[yellow]                                                                \|_________|       |_______|\__\                                 \|_________|        \|_________|"
+    )
+    rich_print(
+        "[yellow]                                                                                          \|__|                                                                 "
+    )
+
+    sleep(3)
+
+    rich_print("[yellow]Please Select the following Choices:")
+    rich_print("[cyan]\t1. [yellow]Train from Scratch")
+    rich_print("[cyan]\t2. [yellow]Train from Pre-trained Checkpoint")
+    rich_print("[cyan]\t3. [yellow]Do Both")
+    choice = int(input())
+    print("\n")
+
+    rich_print("[yellow]Please Enter the Number of Training Epochs:")
+    epochs = int(input())
+    print("\n")
 
     os.environ["WANDB_CONSOLE"] = "wrap"
     os.environ["WANDB_SILENT"] = "true"
@@ -37,7 +69,7 @@ if __name__ == "__main__":
     config.batch_size = 256
     config.hidden_units = 8
     config.learning_rate = 1e-3
-    config.epochs = 10
+    config.epochs = epochs
 
     seed_everything(config.seed)
 
@@ -48,139 +80,38 @@ if __name__ == "__main__":
         nn.Linear(2, 30), nn.ReLU(), nn.Linear(30, 20), nn.ReLU(), nn.Linear(20, 1)
     )
 
-    bar_column = BarColumn(bar_width=None, table_column=Column(ratio=1))
-
-    epoch_progress_1 = Progress(
-        "[yellow]{task.description}",
-        SpinnerColumn(),
-        bar_column,
-        TimeElapsedColumn(),
-        expand=True,
-    )
-    epoch_progress_2 = Progress(
-        "[yellow]{task.description}",
-        SpinnerColumn(),
-        bar_column,
-        TimeElapsedColumn(),
-        expand=True,
-    )
-    epoch_task_1 = epoch_progress_1.add_task(
-        "Training", total=config.epochs // 2, start=False
-    )
-    epoch_task_2 = epoch_progress_2.add_task(
-        "Resuming Training", total=config.epochs // 2, start=False
-    )
-
     loss_function = nn.BCEWithLogitsLoss()
     optimizer = optim.SGD(model.parameters(), lr=config.learning_rate)
 
-    layout = interface(epoch_progress_1, f"Training for {config.epochs // 2} epochs")
-
-    with Live(layout, refresh_per_second=20) as live:
-
-        run_url = shorten_url(run.get_url())
-
-        live.update(
-            interface(
-                epoch_progress_1,
-                f"Training for {config.epochs // 2} epochs",
-                f"Track your experiment @ {run_url} :bee:",
-            )
-        )
-
-        (
-            model,
-            loss_history,
-            accuracy_history,
-            val_loss_history,
-            val_accuracy_history,
-            epoch_progress_1,
-            epoch_task_1,
-        ) = train_and_validate(
-            model,
-            config.batch_size,
+    if choice == 1:
+        choice_1(
+            run,
+            config,
             train_dataloader,
             val_dataloader,
+            model,
             loss_function,
             optimizer,
-            config.epochs // 2,
-            epoch_progress_1,
-            epoch_task_1,
         )
-
-        live.update(
-            interface(
-                epoch_progress_1,
-                "Fetching artifact \[wandb/common-ml-errors/checkpoints:latest]",
-                f"Track your experiment @ {run_url} :bee:",
-            )
-        )
-
-        sleep(3)
-        artifact = run.use_artifact(
-            "wandb/common-ml-errors/checkpoints:latest", type="model"
-        )
-        artifact_dir = artifact.download()
-
-        live.update(
-            interface(
-                epoch_progress_1,
-                "Loading Checkpoint from Artifact \[checkpoint.pth]",
-                f"Track your experiment @ {run_url} :bee:",
-            )
-        )
-
-        sleep(3)
-        model_file = os.path.join(artifact_dir, "checkpoint.pth")
-        checkpoint = torch.load(model_file)
-        model.load_state_dict(checkpoint["model_state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-
-        live.update(
-            interface(
-                epoch_progress_2,
-                f"Resuming Training for {config.epochs // 2} more epochs",
-                f"Track your experiment @ {run_url} :bee:",
-            )
-        )
-
-        (
-            model,
-            loss_history,
-            accuracy_history,
-            val_loss_history,
-            val_accuracy_history,
-            epoch_progress_2,
-            epoch_task_2,
-        ) = train_and_validate(
-            model,
-            config.batch_size,
+    elif choice == 2:
+        choice_2(
+            run,
+            config,
             train_dataloader,
             val_dataloader,
+            model,
             loss_function,
             optimizer,
-            config.epochs // 2,
-            epoch_progress_2,
-            epoch_task_2,
         )
-
-        live.update(
-            interface(
-                epoch_progress_2,
-                "Cleanup in Progress",
-                f"Track your experiment @ {run_url} :bee:",
-            )
-        )
-
-        sleep(3)
-        cleanup()
-
-        live.update(
-            interface(
-                epoch_progress_2,
-                "Training Ended",
-                f"Track your experiment @ {run_url} :bee:",
-            )
+    elif choice == 3:
+        choice_3(
+            run,
+            config,
+            train_dataloader,
+            val_dataloader,
+            model,
+            loss_function,
+            optimizer,
         )
 
     wandb.finish()

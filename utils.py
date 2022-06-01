@@ -20,5 +20,8 @@ def shorten_url(long_url):
 
 
 def cleanup():
-    shutil.rmtree("artifacts")
-    os.remove("checkpoint.pth")
+    try:
+        shutil.rmtree("artifacts")
+        os.remove("checkpoint.pth")
+    except:
+        pass

@@ -45,7 +45,9 @@ def interface(
     train_message: str = "Epoch Progression",
     url="Let W&B initialize a run!",
 ):
-    short_url = shorten_url("http://www.wandb.ai/wandb/common-ml-errors/reports/How-to-Save-and-Load-Models-in-PyTorch--VmlldzozMjg0MTE")
+    short_url = shorten_url(
+        "http://www.wandb.ai/wandb/common-ml-errors/reports/How-to-Save-and-Load-Models-in-PyTorch--VmlldzozMjg0MTE"
+    )
     report_url = f"For more details Check out our report @ {short_url} :bee:"
     footer_table = get_footer_table(url)
     report_footer_table = get_footer_table(report_url)
