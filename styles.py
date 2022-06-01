@@ -67,3 +67,39 @@ def interface(
     layout["report-footer"].update(report_footer_table)
 
     return layout
+
+
+def final_interface(
+    epoch_progress,
+    train_message: str = "Epoch Progression",
+    url="Let W&B initialize a run!",
+):
+    short_url = shorten_url(
+        "http://www.wandb.ai/wandb/common-ml-errors/reports/How-to-Save-and-Load-Models-in-PyTorch--VmlldzozMjg0MTE"
+    )
+    report_url = f"For more details Check out our report @ {short_url} :bee:"
+    footer_table = get_footer_table(url)
+    report_footer_table = get_footer_table(report_url)
+
+    goodbye_table = Table.grid(expand=True)
+    goodbye_table.add_column(ratio=1)
+    goodbye_table.add_row("[b] :point_right: To experience Real-time Experiment Tracking for your own project, log on to wandb.ai/site[/b]")
+    goodbye_table = Panel(goodbye_table, style="black on yellow")
+
+    layout = Layout(name="root")
+
+    layout.split(
+        Layout(name="header", size=3),
+        Layout(name="epoch-level", size=7),
+        Layout(name="footer", size=3),
+        Layout(name="report-footer", size=3),
+        Layout(name="goodbye-footer", size=3),
+    )
+
+    layout["header"].update(Header())
+    layout["epoch-level"].update(get_epoch_table(epoch_progress, train_message))
+    layout["footer"].update(footer_table)
+    layout["report-footer"].update(report_footer_table)
+    layout["goodbye-footer"].update(goodbye_table)
+
+    return layout

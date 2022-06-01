@@ -11,9 +11,9 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 
-from styles import interface
 from train import train_and_validate
 from utils import shorten_url, cleanup
+from styles import interface, final_interface
 
 
 def choice_1(
@@ -80,7 +80,7 @@ def choice_1(
         cleanup()
 
         live.update(
-            interface(
+            final_interface(
                 epoch_progress_2,
                 "Training Ended",
                 f"Track your experiment @ {run_url} :bee:",
@@ -191,7 +191,7 @@ def choice_2(
         cleanup()
 
         live.update(
-            interface(
+            final_interface(
                 epoch_progress_2,
                 "Training Ended",
                 f"Track your experiment @ {run_url} :bee:",
@@ -311,7 +311,7 @@ def choice_3(
         cleanup()
 
         live.update(
-            interface(
+            final_interface(
                 epoch_progress_2,
                 "Training Ended",
                 f"Track your experiment @ {run_url} :bee:",
