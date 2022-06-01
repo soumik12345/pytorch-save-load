@@ -83,7 +83,9 @@ def final_interface(
 
     goodbye_table = Table.grid(expand=True)
     goodbye_table.add_column(ratio=1)
-    goodbye_table.add_row("[b] :point_right: To experience Real-time Experiment Tracking for your own project, log on to wandb.ai/site[/b]")
+    goodbye_table.add_row(
+        "[b] :point_right: To experience Real-time Experiment Tracking for your own project, log on to wandb.ai/site[/b]"
+    )
     goodbye_table = Panel(goodbye_table, style="black on yellow")
 
     layout = Layout(name="root")
